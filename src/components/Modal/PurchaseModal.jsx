@@ -7,8 +7,12 @@ import {
   DialogTitle,
 } from '@headlessui/react'
 import { Fragment } from 'react'
+import Button from '../Shared/Button/Button'
+import useAuth from '../../hooks/useAuth'
 
-const PurchaseModal = ({ closeModal, isOpen }) => {
+const PurchaseModal = ({ closeModal, isOpen, plant }) => {
+  const { user } = useAuth(); 
+  const { name, description, category, price, quantity, image, seller } = plant;
   // Total Price Calculation
 
   return (
@@ -45,20 +49,52 @@ const PurchaseModal = ({ closeModal, isOpen }) => {
                   Review Info Before Purchase
                 </DialogTitle>
                 <div className='mt-2'>
-                  <p className='text-sm text-gray-500'>Plant: Money Plant</p>
+                  <p className='text-sm text-gray-500'>Plant: {name}</p>
                 </div>
                 <div className='mt-2'>
-                  <p className='text-sm text-gray-500'>Category: Indoor</p>
+                  <p className='text-sm text-gray-500'>Category: {category}</p>
                 </div>
                 <div className='mt-2'>
-                  <p className='text-sm text-gray-500'>Customer: PH</p>
+                  <p className='text-sm text-gray-500'>Customer: {user?.displayName}</p>
                 </div>
 
                 <div className='mt-2'>
-                  <p className='text-sm text-gray-500'>Price: $ 120</p>
+                  <p className='text-sm text-gray-500'>Price: $ {price}</p>
                 </div>
                 <div className='mt-2'>
-                  <p className='text-sm text-gray-500'>Available Quantity: 5</p>
+                  <p className='text-sm text-gray-500'>Available Quantity: {quantity}</p>
+                </div>
+
+                  {/* Quantity */}
+                  <div className='space-y-1 text-sm mt-2'>
+                    <label htmlFor='quantity' className='text-gray-600'>
+                      Quantity
+                    </label>
+                    <input max={quantity} min={1}
+                      className='ml-2 px-4 py-3 text-gray-800 border border-lime-300 focus:outline-lime-500 rounded-md bg-white'
+                      name='quantity'
+                      id='quantity'
+                      type='number'
+                      placeholder='Available quantity'
+                      required
+                    />
+                  </div>
+                  {/* Address */}
+                  <div className='space-y-1 text-sm mt-2'>
+                    <label htmlFor='address' className='text-gray-600'>
+                      Address
+                    </label>
+                    <input
+                      className='ml-2 px-4 py-3 text-gray-800 border border-lime-300 focus:outline-lime-500 rounded-md bg-white'
+                      name='address'
+                      id='address'
+                      type='number'
+                      placeholder='your shipping address here...'
+                      required
+                    />
+                  </div>
+                <div className="mt-2">
+                  <Button label={'Confirm Purchase'} />
                 </div>
               </DialogPanel>
             </TransitionChild>
