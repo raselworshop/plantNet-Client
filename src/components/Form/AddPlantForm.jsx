@@ -1,7 +1,16 @@
-const AddPlantForm = () => {
+import PropTypes from 'prop-types';
+import { TbFidgetSpinner } from 'react-icons/tb';
+
+const AddPlantForm = ({ handleSubmit, uploadText, setUploadText, loading }) => {
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setUploadText({ file: file, name: file.name, size: file.size, progress: 0 });
+    }
+  };
   return (
     <div className='w-full min-h-[calc(100vh-40px)] flex flex-col justify-center items-center text-gray-800 rounded-xl bg-gray-50'>
-      <form>
+      <form onSubmit={handleSubmit}>
         <div className='grid grid-cols-1 lg:grid-cols-2 gap-10'>
           <div className='space-y-6'>
             {/* Name */}
@@ -87,6 +96,7 @@ const AddPlantForm = () => {
                 <div className='flex flex-col w-max mx-auto text-center'>
                   <label>
                     <input
+                      onChange={handleFileChange}
                       className='text-sm cursor-pointer w-36 hidden'
                       type='file'
                       name='image'
@@ -95,10 +105,35 @@ const AddPlantForm = () => {
                       hidden
                     />
                     <div className='bg-lime-500 text-white border border-gray-300 rounded font-semibold cursor-pointer p-1 px-3 hover:bg-lime-500'>
-                      Upload
+                      {uploadText.name}
                     </div>
                   </label>
                 </div>
+                {uploadText && (
+                  <>
+                    {/* Progress */}
+                    {uploadText.progress > 0 && (
+                      <div className='w-full h-2 bg-gray-200 rounded-lg'>
+                        <div
+                          style={{ width: `${uploadText.progress}%` }}>
+                        </div>
+                      </div>
+
+                    )}
+                    <div className='flex mt-3'>
+                      {/* Image Preview */}
+                      {uploadText.file && (
+                        <div className=' flex-1 w-full h-20'>
+                          <img className='w-full h-full' src={URL.createObjectURL(uploadText.file)} alt="" />
+                        </div>
+                      )}
+
+                      {uploadText.size > 0 &&
+                        <p className=' flex-1 text-center w-full'>Image Size: {(uploadText.size / 1024).toFixed(2)} KB</p>
+                      }
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 
@@ -107,13 +142,29 @@ const AddPlantForm = () => {
               type='submit'
               className='w-full p-3 mt-5 text-center font-medium text-white transition duration-200 rounded shadow-md bg-lime-500 '
             >
-              Save & Continue
+              {loading ? (
+                <TbFidgetSpinner className='animate-spin m-auto' />
+              ) : (
+                'Save & Continue'
+              )}
+
             </button>
           </div>
         </div>
       </form>
     </div>
   )
-}
+};
+AddPlantForm.propTypes = {
+  handleSubmit: PropTypes.func.isRequired,
+  uploadText: PropTypes.shape({
+    name: PropTypes.string,
+    size: PropTypes.number,
+    progress: PropTypes.number,
+    file: PropTypes.object,
+  }).isRequired,
+  setUploadText: PropTypes.func,
+  loading: PropTypes.bool,
+};
 
 export default AddPlantForm
