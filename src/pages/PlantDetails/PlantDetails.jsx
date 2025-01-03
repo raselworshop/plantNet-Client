@@ -103,7 +103,7 @@ const PlantDetails = () => {
           </div>
           <hr className='my-6' />
 
-          <PurchaseModal plant={plant} closeModal={closeModal} isOpen={isOpen} />
+          <PurchaseModal refetch={refetch} plant={plant} closeModal={closeModal} isOpen={isOpen} />
 
           <div className='md:col-span-3 order-first md:order-last mb-10'>
             {/* RoomReservation */}
