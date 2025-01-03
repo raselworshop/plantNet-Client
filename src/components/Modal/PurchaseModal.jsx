@@ -6,20 +6,22 @@ import {
   DialogPanel,
   DialogTitle,
 } from '@headlessui/react'
-import { Fragment, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import Button from '../Shared/Button/Button'
 import useAuth from '../../hooks/useAuth'
 import toast from 'react-hot-toast'
 import useAxiosSecure from '../../hooks/useAxiosSecure'
+import { useNavigate } from 'react-router-dom'
 
 const PurchaseModal = ({ closeModal, isOpen, plant, refetch }) => {
   const { name, category, price, quantity, _id, seller } = plant;
   const axiosSecure = useAxiosSecure();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [totalQuantity, setTotalQuantity] = useState(1);
   const [totalPrice, setTotoalPrice] = useState(price);
   const [purchaseInfo, setPurchaseInfo] = useState({
-    customer : {
+    customer: {
       name: user?.displayName,
       email: user?.email,
       image: user?.photoURL,
@@ -32,7 +34,10 @@ const PurchaseModal = ({ closeModal, isOpen, plant, refetch }) => {
     status: 'pending',
     address: '',
   })
-console.log(purchaseInfo)
+  console.log(user.displayName, "Display Name");
+  console.log(user.email, "Email");
+  console.log(user.photoURL, "Photo URL");
+
   const handleQuantityChange = value => {
     if (value > quantity) {
       return toast.error('Quantity exceeds available quantity');
@@ -41,22 +46,42 @@ console.log(purchaseInfo)
     } else {
       setTotalQuantity(value);
       setTotoalPrice(value * price)
-      setPurchaseInfo(prev=>({...prev, quantity: value, price: value * price}))
+      setPurchaseInfo(prev => ({ ...prev, quantity: value, price: value * price }))
     }
   }
-const handlePurchase = async () => {
- console.table(purchaseInfo)
- try {
-  await axiosSecure.post(`/orders`, purchaseInfo)
-  await axiosSecure.patch(`/plants/quantity/${_id}`, {quantityUpdate: totalQuantity})
-  toast.success('Order placed successfully')
-  refetch()
- } catch (error) {
-  console.log(error)
- }finally{
-  closeModal()
- }
-}
+//  useeffect I used bcz I want to add user data also in puchase info
+  useEffect(() => {
+    if (user) {
+      setPurchaseInfo(prev => ({
+        ...prev,
+        customer: {
+          name: user?.displayName || 'Guest',
+          email: user?.email || 'No email',
+          image: user?.photoURL || 'No image',
+        },
+      }));
+    }
+  }, [user]);
+
+  const handlePurchase = async () => {
+    console.table(purchaseInfo)
+    console.table(purchaseInfo);
+    if (!purchaseInfo.customer.name || !purchaseInfo.customer.email) {
+      return toast.error('Customer information is incomplete');
+    }
+    try {
+      await axiosSecure.post(`/orders`, purchaseInfo)
+      // decrease quantity from plants collection 
+      await axiosSecure.patch(`/plants/quantity/${_id}`, { quantityUpdate: totalQuantity, status: 'decrease' })
+      toast.success('Order placed successfully')
+      refetch()
+      navigate('/dashboard/my-orders')
+    } catch (error) {
+      console.log(error)
+    } finally {
+      closeModal()
+    }
+  }
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
@@ -130,7 +155,7 @@ const handlePurchase = async () => {
                     Address
                   </label>
                   <input
-                    onChange={(e) => setPurchaseInfo(prev=>({...prev, address: e.target.value}))}
+                    onChange={(e) => setPurchaseInfo(prev => ({ ...prev, address: e.target.value }))}
                     className='ml-2 px-4 py-3 text-gray-800 border border-lime-300 focus:outline-lime-500 rounded-md bg-white'
                     name='address'
                     id='address'
